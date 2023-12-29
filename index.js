@@ -28,6 +28,7 @@ async function run() {
   try {
     // make collectoin
     const UserCollectoin = client.db("E-commerce").collection("users");
+    const productCollectoin = client.db("E-commerce").collection("product");
 
     // jwt api
     app.post("/jwt", async (req, res) => {
@@ -37,7 +38,7 @@ async function run() {
         "d547bc644dfb8fa06eb6a24690665052c47aaaf0986f667542dc78208cedfe1334cabd2200107ad7923846a499535a4bdfcd6b1d1cb4dace3e17a22147f6b899",
         { expiresIn: "365h" }
       );
-      res.send({token});
+      res.send({ token });
     });
 
     //  middale wares
@@ -116,27 +117,88 @@ async function run() {
       }
       res.send({ saller });
     });
-  
-     // user  data get for admin show all user
-    app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
-      const result = await UserCollectoin.find().toArray()
-       res.send(result)
-     })
 
-    // delete  user 
-    app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await UserCollectoin.deleteOne(query)
-      res.send(result)
-    })
+    // user  data get for admin show all user
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
+      const result = await UserCollectoin.find().toArray();
+      res.send(result);
+    });
 
-    
+    // delete  user
+    app.delete("/users/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await UserCollectoin.deleteOne(query);
+      res.send(result);
+    });
+
+    //  make saller or user to admin
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await UserCollectoin.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
+    // make user to  saller
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "saller",
+          },
+        };
+        const result = await UserCollectoin.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
+    // make saller to User
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "user",
+          },
+        };
+        const result = await UserCollectoin.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
+
+    // saller data post in databse
+    app.post("/products", async (req, res) => {
+      const peoduct = req.body;
+      const result = await productCollectoin.insertOne(peoduct);
+      res.send(result);
+    });
    
-   
+    // admin show all saller request data
+    app.get("/adminSaller", verifyToken, verifyAdmin, async (req, res) => {
+      const result = await productCollectoin.find().toArray();
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
-
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
