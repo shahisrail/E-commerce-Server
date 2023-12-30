@@ -184,18 +184,22 @@ async function run() {
       }
     );
 
-    // saller data post in databse
-    app.post("/products", async (req, res) => {
-      const peoduct = req.body;
-      const result = await productCollectoin.insertOne(peoduct);
+
+    // product details spaficik id
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollectoin.find(query).toArray();
       res.send(result);
     });
-   
+
     // admin show all saller request data
     app.get("/adminSaller", verifyToken, verifyAdmin, async (req, res) => {
       const result = await productCollectoin.find().toArray();
       res.send(result);
     });
+ 
+    // Publised a product 
 
     await client.db("admin").command({ ping: 1 });
     console.log(
