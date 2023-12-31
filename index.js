@@ -211,11 +211,41 @@ async function run() {
       const result = await productCollectoin.find().toArray();
       res.send(result);
     });
- 
-    // Publised a product 
-    // unpublisede product with a message 
 
-    //  myproduct show spesific saller his product 
+    // Publised a product
+    // PUT METHOD
+    app.put("/adminSaller/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          message: req.body.enteredMessage,
+          status: req.body.status,
+        },
+      };
+      const result = await productCollectoin.updateOne(query, updatedDoc);
+      res.status(200).send(result);
+    });
+
+    // unpublisede product with a message
+    // pacth Published for data
+    app.patch(
+      "/adminSaller/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            status: req.body.status,
+          },
+        };
+        const result = await productCollectoin.updateOne(query, updatedDoc);
+        res.status(200).send(result);
+      }
+    );
+    //  myproduct show spesific saller his product
     app.get("/myProduct", async (req, res) => {
       let query = {};
       if (req.query?.email) {
@@ -225,31 +255,29 @@ async function run() {
       res.send(result);
     });
 
-
-    // spesific data update and rote data get 
+    // spesific data update and rote data get
     app.get("/myProduct/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollectoin.findOne(query);
       res.send(result);
     });
-    // spesific data update 
-    app.patch('/myProduct/:id', async (req, res) => {
-      const item = req.body
-      const id = req.params.id
-      const filter = { _id: new ObjectId(id) }
+    // spesific data update
+    app.patch("/myProduct/:id", async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           category: item.category,
           titale: item.titale,
           Descriptoin: item.Descriptoin,
-          Dedline: item.Dedline
-        }
-      }
-      const result = await productCollectoin.updateOne(filter, updatedDoc)
-      res.send(result)
-    })
-
+          Dedline: item.Dedline,
+        },
+      };
+      const result = await productCollectoin.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
